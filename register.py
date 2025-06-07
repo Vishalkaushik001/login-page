@@ -3,6 +3,7 @@ from tkinter import ttk
 from PIL import Image , ImageTk 
 from tkinter import messagebox
 import mysql.connector
+import pymysql
 
 class Register:
     def __init__(self , root):
@@ -136,7 +137,7 @@ class Register:
         elif self.var_check.get()==0:
             messagebox.showerror("Error", "Please agree our terms ane condition")
         else:
-            conn = mysql.connector.connect(host = "localhost" , user="root" , password ="12345678" , database ="my_data")
+            conn = pymysql.connect(host = "localhost" , user="root" , password ="12345678" , database ="my_data")
             my_cursor = conn.cursor()
             query = ("select * from register where email = %s")
             value = (self.var_email.get(),)
