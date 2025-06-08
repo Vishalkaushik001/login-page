@@ -68,11 +68,11 @@ class Login_Window:
         loginbtn.place(x = 110 , y = 300 , width = 120 , height = 35)
 
     # register button
-        registerbtn = Button(frame , text = "New user registration" , command = self.register_window , font = ("times new roman" , 10 , "bold") , borderwidth=0 , fg = "#962071" , bg = "#b8b2a6" , activeforeground= "white" ,activebackground= "#b8b2a6")
+        registerbtn = Button(frame , text = "New user registration" , command=self.register_window, font = ("times new roman" , 10 , "bold") , borderwidth=0 , fg = "#962071" , bg = "#b8b2a6" , activeforeground= "white" ,activebackground= "#b8b2a6")
         registerbtn.place(x = 20 , y = 350 , width = 160)
 
     # forgot button 
-        forgotbtn = Button(frame , text = "Forgot Password" , font = ("times new roman" , 10 , "bold") , borderwidth=0 , fg = "#962071" , bg = "#b8b2a6" , activeforeground= "white" ,activebackground= "#b8b2a6")
+        forgotbtn = Button(frame , text = "Forgot Password" ,command=self.forgot_password_window, font = ("times new roman" , 10 , "bold") , borderwidth=0 , fg = "#962071" , bg = "#b8b2a6" , activeforeground= "white" ,activebackground= "#b8b2a6")
         forgotbtn.place(x = 7 , y = 370 , width = 160)
 
 
@@ -95,13 +95,110 @@ class Login_Window:
                                                                                         ))
 
             row = my_cursor.fetchone()
-            if row != None:
+            if row == None:
                 messagebox.showerror("Error", "Invalid Username & Password")
             else:
                 open_main=messagebox.askyesno("Access Granted", "Welcome Admin, Continue?")
                 # if open_main>0:
                 #     self.new_window = Toplevel(self.new_window)
                 #     self.app = 
+            conn.commit()
+            conn.close()
+
+
+    # ==========================Reset password===================
+    def reset_pass(self):
+        if self.combo_security_Q.get() == "select":
+            messagebox.showerror("Error" , "Select security question" )
+        elif self.txt_security.get() == "":
+            messagebox.showerror("Error" , "Please enter the answer"  )
+        elif self.txt_newpass.get() == "":
+            messagebox.showerror("Error","Please enter the new Password")
+        else:
+            conn = pymysql.connect(host = "localhost" , user="root" , password ="12345678" , database ="my_data")
+            my_cursor = conn.cursor()
+            qury = ("select * from register where email = %s and securityQ = %s and securityA = %s")
+            vlaue = (self.txtuser.get(),self.combo_security_Q.get() , self.txt_security.get(),)
+            my_cursor.execute(qury , vlaue)
+            row = my_cursor.fetchone()
+            if row == None:
+                messagebox.showerror("Error","Please enter correct answer")
+            else:
+                query = ("update register set password = %s where email = %s")
+                value = (self.txt_newpass.get() , self.txtuser.get())
+                my_cursor.execute(query,value)
+
+                conn.commit()
+                conn.close()
+                messagebox.showinfo("Info" , "Your password has been reset , please login with new password")
+                self.root2.destroy()
+    
+
+
+
+
+    
+
+    # =====================forgot pasword window =========================
+    def forgot_password_window(self):
+        if self.txtuser.get() == "":
+            messagebox.showerror("Error","Please Fill the email address")
+        else:
+            conn = pymysql.connect(host = "localhost" , user="root" , password ="12345678" , database ="my_data")
+            my_cursor = conn.cursor()
+            query = ("select * from register where email = %s")
+            value = (self.txtuser.get(),)
+            my_cursor.execute(query,value)
+            row = my_cursor.fetchone()
+            # print(row)
+
+            if row == None:
+                messagebox.showerror("My Error" , "Please enter the valid user name")
+            else:
+                conn.close()
+                self.root2 = Toplevel()
+                self.root2.title("Forgot Password")
+                self.root2.geometry("340x400+610+170")
+
+                l = Label(self.root2 , text = "Forgot Password" , font = ("times new roman" , 20 , "bold") , fg = "black" , bg = "#F8FAFC")
+                l.place(x=0 , y = 10 , relwidth= 1 )
+
+                security_Q = Label(self.root2 , text = "Select Security Question" , font = ("times new roman" , 15 ,"bold") , bg = "#F8FAFC" , fg = "#962071")
+                security_Q.place(x = 50 , y = 80) 
+
+                self.combo_security_Q = ttk.Combobox(self.root2 , font = ("times new roman", 15 , "bold") , state = "readonly")
+                self.combo_security_Q["values"] = ("Select" , "Your Birth Place" , "Your Nick Name" , "Your Pet Name")
+                self.combo_security_Q.place(x=50 , y = 110 , width = 250)
+                self.combo_security_Q.current(0)
+
+                security_A = Label(self.root2 , text = "Security Answer" , font = ("times new roman" , 15 ,"bold") , bg = "#F8FAFC" , fg = "#962071")
+                security_A.place(x = 50 , y = 150)
+
+                self.txt_security = ttk.Entry(self.root2 ,font = ("times new roman" , 15))
+                self.txt_security.place(x=50 , y = 180 , width = 250)
+
+                new_password = Label(self.root2 , text = "New Password" , font = ("times new roman" , 15 ,"bold") , bg = "#F8FAFC" , fg = "#962071")
+                new_password.place(x = 50 , y = 220)
+
+                self.txt_newpass = ttk.Entry(self.root2 ,font = ("times new roman" , 15))
+                self.txt_newpass.place(x=50 , y = 250 , width = 250)
+
+                btn = Button(self.root2 , text = "Reset" , font = ("times new roman" , 15 ,"bold") , bg = "green" , fg = "white" , command = self.reset_pass)
+                btn.place(x=100 , y = 290)
+
+
+
+
+
+
+
+
+
+
+
+
+
+                               
 
 
 class Register:
@@ -221,7 +318,7 @@ class Register:
         img1 = Image.open(r"C:\Users\HP\OneDrive\Desktop\coding\login form\image\logo2.png")
         img1 = img1.resize((75,75) , Image.Resampling.LANCZOS)
         self.photoimage1 = ImageTk.PhotoImage(img1)
-        b1 = Button(frame,image = self.photoimage1 , borderwidth = 0 , cursor = "hand2" , bg = "#b8b2a6" , activeforeground= "white" , activebackground= "#b8b2a6")
+        b1 = Button(frame,image = self.photoimage1 ,command=self.return_login, borderwidth = 0 , cursor = "hand2" , bg = "#b8b2a6" , activeforeground= "white" , activebackground= "#b8b2a6")
         b1.place(x = 400, y = 400 , width = 100)
 
 
@@ -259,10 +356,16 @@ class Register:
             conn.close()
             messagebox.showinfo("Success", "succesfully register")
              
+            
+    def return_login(self):
+        self.root.destroy()
 
         
 
-
+    def main():
+        root = Tk()
+        obj = Register(root)
+        root.mainloop()
 
 
 
